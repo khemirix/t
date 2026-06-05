@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: iptv-proxy
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: BASE_URL
+        value: http://porn-hub.streamtv.to:8080
+      - key: USERNAME
+        value: CesiSalvi
+      - key: PASSWORD
+        value: f2wcHypsGL
