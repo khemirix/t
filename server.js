@@ -3,10 +3,9 @@ const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...ar
 
 const app = express();
 
-const BASE_URL = process.env.BASE_URL || 'http://192.142.24.100:8080';
-const USERNAME = process.env.USERNAME || 'CesiSalvi';
-const PASSWORD = process.env.PASSWORD || 'f2wcHypsGL';
-const TOKEN    = process.env.TOKEN    || 'bzdKTHRUSnBCeDhSQjRV';
+const BASE_URL = process.env.BASE_URL || 'http://xplatinmedia.com:8080';
+const USERNAME = process.env.USERNAME || 'JKDpros';
+const PASSWORD = process.env.PASSWORD || '2jLwS6gtxZ2a';
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -21,7 +20,7 @@ app.get('/', (req, res) => {
 
 app.get('/stream/:channelId', async (req, res) => {
   const { channelId } = req.params;
-  const upstreamUrl = BASE_URL + '/' + USERNAME + '/' + PASSWORD + '/' + channelId + '?token=' + TOKEN;
+  const upstreamUrl = BASE_URL + '/' + USERNAME + '/' + PASSWORD + '/' + channelId;
 
   console.log('[stream] ' + upstreamUrl);
 
@@ -31,8 +30,7 @@ app.get('/stream/:channelId', async (req, res) => {
       'Accept': 'video/mp2t, application/vnd.apple.mpegurl, */*',
       'Accept-Language': 'en-US,en;q=0.9',
       'Accept-Encoding': 'identity',
-      'Connection': 'keep-alive',
-      'Icy-MetaData': '1'
+      'Connection': 'keep-alive'
     };
 
     if (req.headers['range']) {
@@ -65,7 +63,7 @@ app.get('/stream/:channelId', async (req, res) => {
 
 app.get('/live/:channelId', async (req, res) => {
   const { channelId } = req.params;
-  const upstreamUrl = BASE_URL + '/live/' + USERNAME + '/' + PASSWORD + '/' + channelId + '?token=' + TOKEN;
+  const upstreamUrl = BASE_URL + '/live/' + USERNAME + '/' + PASSWORD + '/' + channelId;
 
   console.log('[live] ' + upstreamUrl);
 
