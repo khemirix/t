@@ -28,8 +28,11 @@ app.get('/stream/:channelId', async (req, res) => {
   try {
     const headers = {
       'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
-      'Accept': '*/*',
-      'Connection': 'keep-alive'
+      'Accept': 'video/mp2t, application/vnd.apple.mpegurl, */*',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Accept-Encoding': 'identity',
+      'Connection': 'keep-alive',
+      'Icy-MetaData': '1'
     };
 
     if (req.headers['range']) {
@@ -70,7 +73,9 @@ app.get('/live/:channelId', async (req, res) => {
     const upstream = await fetch(upstreamUrl, {
       headers: {
         'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
-        'Accept': '*/*'
+        'Accept': 'video/mp2t, application/vnd.apple.mpegurl, */*',
+        'Accept-Encoding': 'identity',
+        'Connection': 'keep-alive'
       }
     });
 
