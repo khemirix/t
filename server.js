@@ -3,10 +3,6 @@ const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...ar
 
 const app = express();
 
-const BASE_URL = process.env.BASE_URL || 'http://xplatinmedia.com:8080';
-const USERNAME = process.env.USERNAME || '@JKDpros';
-const PASSWORD = process.env.PASSWORD || '2jLwS6gtxZ2a';
-
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Range');
@@ -18,17 +14,16 @@ app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'IPTV Proxy running' });
 });
 
-app.get('/stream/:channelId', async (req, res) => {
-  const { channelId } = req.params;
-  const upstreamUrl = BASE_URL + '/' + USERNAME + '/' + PASSWORD + '/' + channelId;
+app.get('/play/:streamId', async (req, res) => {
+  const { streamId } = req.params;
+  const upstreamUrl = 'http://77.137.40.221:8000/play/' + streamId;
 
-  console.log('[stream] ' + upstreamUrl);
+  console.log('[play] ' + upstreamUrl);
 
   try {
     const headers = {
       'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
-      'Accept': 'video/mp2t, application/vnd.apple.mpegurl, */*',
-      'Accept-Language': 'en-US,en;q=0.9',
+      'Accept': '*/*',
       'Accept-Encoding': 'identity',
       'Connection': 'keep-alive'
     };
@@ -56,39 +51,7 @@ app.get('/stream/:channelId', async (req, res) => {
     req.on('close', function() { upstream.body.destroy(); });
 
   } catch (err) {
-    console.error('[stream] error: ' + err.message);
-    res.status(500).send('Proxy error: ' + err.message);
-  }
-});
-
-app.get('/live/:channelId', async (req, res) => {
-  const { channelId } = req.params;
-  const upstreamUrl = BASE_URL + '/live/' + USERNAME + '/' + PASSWORD + '/' + channelId;
-
-  console.log('[live] ' + upstreamUrl);
-
-  try {
-    const upstream = await fetch(upstreamUrl, {
-      headers: {
-        'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
-        'Accept': 'video/mp2t, application/vnd.apple.mpegurl, */*',
-        'Accept-Encoding': 'identity',
-        'Connection': 'keep-alive'
-      }
-    });
-
-    if (!upstream.ok) {
-      return res.status(upstream.status).send('Upstream error: ' + upstream.status);
-    }
-
-    const ct = upstream.headers.get('content-type');
-    res.setHeader('Content-Type', ct || 'application/vnd.apple.mpegurl');
-    res.setHeader('Cache-Control', 'no-cache');
-
-    upstream.body.pipe(res);
-    req.on('close', function() { upstream.body.destroy(); });
-
-  } catch (err) {
+    console.error('[play] error: ' + err.message);
     res.status(500).send('Proxy error: ' + err.message);
   }
 });
