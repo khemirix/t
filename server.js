@@ -1,99 +1,95 @@
-const express = require(‘express’);
-const fetch = (…args) => import(‘node-fetch’).then(({ default: f }) => f(…args));
+const express = require('express');
+const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
 
 const app = express();
 
-const BASE_URL = process.env.BASE_URL || ‘http://porn-hub.streamtv.to:8080’;
-const USERNAME = process.env.USERNAME || ‘CesiSalvi’;
-const PASSWORD = process.env.PASSWORD || ‘f2wcHypsGL’;
+const BASE_URL = process.env.BASE_URL || 'http://porn-hub.streamtv.to:8080';
+const USERNAME = process.env.USERNAME || 'CesiSalvi';
+const PASSWORD = process.env.PASSWORD || 'f2wcHypsGL';
 
 app.use((req, res, next) => {
-res.header(‘Access-Control-Allow-Origin’, ‘*’);
-res.header(‘Access-Control-Allow-Headers’, ‘Range’);
-res.header(‘Access-Control-Expose-Headers’, ‘Content-Length, Content-Range, Content-Type’);
-next();
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Range');
+  res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Content-Type');
+  next();
 });
 
-app.get(’/’, (req, res) => {
-res.json({ status: ‘ok’, message: ‘IPTV Proxy running’ });
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'IPTV Proxy running' });
 });
 
-app.get(’/stream/:channelId’, async (req, res) => {
-const { channelId } = req.params;
-const upstreamUrl = BASE_URL + ‘/’ + USERNAME + ‘/’ + PASSWORD + ‘/’ + channelId;
+app.get('/stream/:channelId', async (req, res) => {
+  const { channelId } = req.params;
+  const upstreamUrl = BASE_URL + '/' + USERNAME + '/' + PASSWORD + '/' + channelId;
 
-console.log(’[stream] ’ + upstreamUrl);
+  console.log('[stream] ' + upstreamUrl);
 
-try {
-const headers = {
-‘User-Agent’: ‘VLC/3.0.18 LibVLC/3.0.18’,
-‘Accept’: ‘*/*’,
-‘Connection’: ‘keep-alive’
-};
+  try {
+    const headers = {
+      'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
+      'Accept': '*/*',
+      'Connection': 'keep-alive'
+    };
 
-```
-if (req.headers['range']) {
-  headers['Range'] = req.headers['range'];
-}
+    if (req.headers['range']) {
+      headers['Range'] = req.headers['range'];
+    }
 
-const upstream = await fetch(upstreamUrl, { headers: headers });
+    const upstream = await fetch(upstreamUrl, { headers: headers });
 
-if (!upstream.ok) {
-  return res.status(upstream.status).send('Upstream error: ' + upstream.status);
-}
+    if (!upstream.ok) {
+      return res.status(upstream.status).send('Upstream error: ' + upstream.status);
+    }
 
-const ct = upstream.headers.get('content-type');
-const cl = upstream.headers.get('content-length');
-const cr = upstream.headers.get('content-range');
+    const ct = upstream.headers.get('content-type');
+    const cl = upstream.headers.get('content-length');
+    const cr = upstream.headers.get('content-range');
 
-res.setHeader('Content-Type', ct || 'video/mp2t');
-if (cl) res.setHeader('Content-Length', cl);
-if (cr) res.setHeader('Content-Range', cr);
-res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Content-Type', ct || 'video/mp2t');
+    if (cl) res.setHeader('Content-Length', cl);
+    if (cr) res.setHeader('Content-Range', cr);
+    res.setHeader('Cache-Control', 'no-cache');
 
-upstream.body.pipe(res);
-req.on('close', function() { upstream.body.destroy(); });
-```
+    upstream.body.pipe(res);
+    req.on('close', function() { upstream.body.destroy(); });
 
-} catch (err) {
-console.error(’[stream] error: ’ + err.message);
-res.status(500).send(’Proxy error: ’ + err.message);
-}
+  } catch (err) {
+    console.error('[stream] error: ' + err.message);
+    res.status(500).send('Proxy error: ' + err.message);
+  }
 });
 
-app.get(’/live/:channelId’, async (req, res) => {
-const { channelId } = req.params;
-const upstreamUrl = BASE_URL + ‘/live/’ + USERNAME + ‘/’ + PASSWORD + ‘/’ + channelId;
+app.get('/live/:channelId', async (req, res) => {
+  const { channelId } = req.params;
+  const upstreamUrl = BASE_URL + '/live/' + USERNAME + '/' + PASSWORD + '/' + channelId;
 
-console.log(’[live] ’ + upstreamUrl);
+  console.log('[live] ' + upstreamUrl);
 
-try {
-const upstream = await fetch(upstreamUrl, {
-headers: {
-‘User-Agent’: ‘VLC/3.0.18 LibVLC/3.0.18’,
-‘Accept’: ‘*/*’
-}
-});
+  try {
+    const upstream = await fetch(upstreamUrl, {
+      headers: {
+        'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
+        'Accept': '*/*'
+      }
+    });
 
-```
-if (!upstream.ok) {
-  return res.status(upstream.status).send('Upstream error: ' + upstream.status);
-}
+    if (!upstream.ok) {
+      return res.status(upstream.status).send('Upstream error: ' + upstream.status);
+    }
 
-const ct = upstream.headers.get('content-type');
-res.setHeader('Content-Type', ct || 'application/vnd.apple.mpegurl');
-res.setHeader('Cache-Control', 'no-cache');
+    const ct = upstream.headers.get('content-type');
+    res.setHeader('Content-Type', ct || 'application/vnd.apple.mpegurl');
+    res.setHeader('Cache-Control', 'no-cache');
 
-upstream.body.pipe(res);
-req.on('close', function() { upstream.body.destroy(); });
-```
+    upstream.body.pipe(res);
+    req.on('close', function() { upstream.body.destroy(); });
 
-} catch (err) {
-res.status(500).send(’Proxy error: ’ + err.message);
-}
+  } catch (err) {
+    res.status(500).send('Proxy error: ' + err.message);
+  }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, function() {
-console.log(’IPTV Proxy listening on port ’ + PORT);
+  console.log('IPTV Proxy listening on port ' + PORT);
 });
