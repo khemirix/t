@@ -4,7 +4,7 @@ const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...ar
 const app = express();
 
 const BASE_URL = process.env.BASE_URL || 'http://xplatinmedia.com:8080';
-const USERNAME = process.env.USERNAME || 'JKDpros';
+const USERNAME = process.env.USERNAME || '@JKDpros';
 const PASSWORD = process.env.PASSWORD || '2jLwS6gtxZ2a';
 
 app.use((req, res, next) => {
