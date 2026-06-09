@@ -14,12 +14,8 @@ app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'IPTV Proxy running' });
 });
 
-app.get('/play/:streamId', async (req, res) => {
-  const { streamId } = req.params;
-  const upstreamUrl = 'http://77.137.40.221:8000/play/' + streamId;
-
-  console.log('[play] ' + upstreamUrl);
-
+async function streamUrl(upstreamUrl, req, res) {
+  console.log('[proxy] ' + upstreamUrl);
   try {
     const headers = {
       'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
@@ -27,10 +23,7 @@ app.get('/play/:streamId', async (req, res) => {
       'Accept-Encoding': 'identity',
       'Connection': 'keep-alive'
     };
-
-    if (req.headers['range']) {
-      headers['Range'] = req.headers['range'];
-    }
+    if (req.headers['range']) headers['Range'] = req.headers['range'];
 
     const upstream = await fetch(upstreamUrl, { headers: headers });
 
@@ -51,9 +44,20 @@ app.get('/play/:streamId', async (req, res) => {
     req.on('close', function() { upstream.body.destroy(); });
 
   } catch (err) {
-    console.error('[play] error: ' + err.message);
+    console.error('[proxy] error: ' + err.message);
     res.status(500).send('Proxy error: ' + err.message);
   }
+}
+
+app.get('/play/:streamId', async (req, res) => {
+  const upstreamUrl = 'http://77.137.40.221:8000/play/' + req.params.streamId;
+  return streamUrl(upstreamUrl, req, res);
+});
+
+app.get('/fetch', async (req, res) => {
+  const url = req.query.url;
+  if (!url) return res.status(400).send('Missing url param');
+  return streamUrl(url, req, res);
 });
 
 const PORT = process.env.PORT || 3000;
